@@ -28,7 +28,7 @@ PIECE_SLIDING = {
 N, E, S, W = -10, 1, 10, -1
 PIECE_DIRECTIONS = {
     0: None,
-    1: [N, N+N, N+E, N+W],
+    1: None,
     2: [N+N+E, N+N+W, N+E+E, N+W+W, S+S+E, S+S+W, S+E+E, S+W+W],
     3: [N+E, N+W, S+E, S+W],
     4: [N, E, S, W],
@@ -72,7 +72,14 @@ class Piece:
         return PIECE_SLIDING[self.piece_type]
     
     def directions(self) -> list[int]:
-        return PIECE_DIRECTIONS[self.piece_type]
+        if self.piece_type != PAWN:
+            directions = PIECE_DIRECTIONS[self.piece_type]
+        elif self.piece_type == PAWN:
+            if self.color == WHITE:
+                directions = [N, N+N, N+E, N+W]
+            elif self.color == BLACK:
+                directions = [S, S+S, S+E, S+W]
+        return directions
 
     def unicode(self) -> str:
         return PIECE_UNICODE[self.symbol()]
