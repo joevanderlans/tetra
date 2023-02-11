@@ -53,6 +53,12 @@ class Square:
 
     def name(self) -> str:
         return SQUARE_NAMES[self.index]
+    
+    def file(self) -> str:
+        return str(self.name())[0]
+
+    def rank(self) -> int:
+        return int(str(self.name())[1])
    
     @classmethod
     def from_name(cls, name: SquareName) -> Square:
