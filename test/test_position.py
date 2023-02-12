@@ -29,3 +29,8 @@ def test_moves_scotch():
     scotch = "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 3"
     my_moves = position.Position(scotch).generate_moves()
     assert len(my_moves) == 32
+
+def test_make_move_e4():
+    my_position = position.Position()
+    my_position.make_move(move.Move.from_uci("e2e4"))
+    assert my_position.fen() == "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"

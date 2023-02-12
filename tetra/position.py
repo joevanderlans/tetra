@@ -117,7 +117,7 @@ class Position:
         castling_rights_fen = "".join(self.castling_rights)
 
         # Set ep_square_fen
-        ep_square_fen = self.ep_square if self.ep_square is not None else "-"
+        ep_square_fen = self.ep_square.name() if self.ep_square is not None else "-"
 
         # Set halfmove_clock_fen
         halfmove_clock_fen = str(self.halfmove_clock)
@@ -141,7 +141,7 @@ class Position:
     def set_piece(self, piece: piece.Piece, square: square.Square) -> None:
         self.board[square.index] = piece.symbol()
     
-    def remove_piece(self, squre: square.Square) -> None:
+    def remove_piece(self, square: square.Square) -> None:
         self.board[square.index] = "."
     
     def get_opposing_color(self) -> piece.Color:
@@ -215,7 +215,7 @@ class Position:
                     my_moves.append(my_move)
                     
                     # Break for captures
-                    if piece_j.piece_type != piece.EMPTY_PIECE: break
+                    if piece_j.piece_type == self.get_opposing_color(): break
 
                     # Break for non-sliding pieces
                     if not piece_i.is_sliding(): break
@@ -224,3 +224,43 @@ class Position:
                     step += direction
         
         return my_moves
+
+    def make_move(self, move: move.Move) -> None:
+        # Update move stack
+        self.move_stack.append(move)
+
+        # Update board
+        square_i = move.from_square
+        square_j = move.to_square
+        piece_i = self.get_piece(move.from_square)
+        piece_j = self.get_piece(move.to_square)
+
+        self.remove_piece(move.from_square)
+        self.set_piece(piece_i, move.to_square)
+
+        # Update castling rights
+        # To do
+
+        # Update en passant square
+        self.ep_square = None
+        if piece_i.piece_type == piece.PAWN \
+            and square_j.index - square_i.index == piece.N + piece.N:
+            self.ep_square = square.Square(square_i.index + piece.N)
+        
+        if piece_i.piece_type == piece.PAWN \
+            and square_j.index - square_i.index == piece.S + piece.S:
+            self.ep_square = square.Square(square_i.index + piece.S)
+        
+        # Update halfmove clock
+        if piece_i.piece_type == piece.PAWN \
+            or piece_j.piece_color == self.get_opposing_color():
+            self.halfmove_clock = 0
+        else:
+            self.halfmove_clock += 1
+
+        # Update move number
+        if self.turn == piece.BLACK:
+            self.move_number += 1
+        
+        # Update turn
+        self.turn = self.get_opposing_color()
