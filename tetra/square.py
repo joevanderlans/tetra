@@ -50,6 +50,12 @@ class Square:
 
     def __str__(self) -> str:
         return self.name()
+    
+    def __eq__(self, other: Square) -> bool:
+        if isinstance(other, Square):
+            return self.index == other.index
+        else:
+            return NotImplemented
 
     def name(self) -> str:
         return SQUARE_NAMES[self.index]

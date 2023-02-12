@@ -14,6 +14,12 @@ class Move:
 
     def __str__(self) -> str:
         return self.uci()
+    
+    def __eq__(self, other: Move) -> bool:
+        if isinstance(other, Move):
+            return (self.from_square, self.to_square) == (other.from_square, other.to_square)
+        else:
+            return NotImplemented
 
     def uci(self) -> str:
         return self.from_square.name() + self.to_square.name()

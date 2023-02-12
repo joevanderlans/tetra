@@ -61,6 +61,12 @@ class Piece:
 
     def __str__(self) -> str:
         return self.symbol()
+    
+    def __eq__(self, other: Piece) -> bool:
+        if isinstance(other, Piece):
+            return (self.piece_type, self.color) == (other.piece_type, other.color)
+        else:
+            return NotImplemented
 
     def symbol(self) -> str:
         symbol = PIECE_SYMBOLS[self.piece_type]
