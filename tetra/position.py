@@ -9,6 +9,7 @@ from tetra import move
 INITIAL_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 INITIAL_FEN = INITIAL_BOARD_FEN + " w KQkq - 0 1"
 
+
 # Create position class
 class Position:
     """A chess position"""
@@ -133,3 +134,93 @@ class Position:
             halfmove_clock_fen,
             move_number_fen,
         ])
+    
+    def get_piece(self, square: square.Square) -> piece.Piece:
+        return piece.Piece.from_symbol(self.board[square.index])
+
+    def set_piece(self, piece: piece.Piece, square: square.Square) -> None:
+        self.board[square.index] = piece.symbol()
+    
+    def remove_piece(self, squre: square.Square) -> None:
+        self.board[square.index] = "."
+    
+    def get_opposing_color(self) -> piece.Color:
+        if self.turn == piece.WHITE:
+            opposing_color = piece.BLACK
+        else:
+            opposing_color = piece.WHITE
+        return opposing_color
+    
+    def generate_moves(self) -> list[move.Move]:
+        my_moves = []
+        
+        for i in square.SQUARES:
+            square_i = square.Square(i)
+            piece_i = self.get_piece(square_i)
+
+            # Skip empty squares
+            if piece_i.piece_type == piece.EMPTY_PIECE: continue
+
+            # Skip opponent pieces
+            if piece_i.color != self.turn: continue
+
+            # Loop over directions
+            for direction in piece_i.directions():
+                step = direction
+
+                # Use a loop for sliding pieces
+                while True:
+                    j = i + step
+
+                    # Stay on board
+                    if j not in square.SQUARES: break
+
+                    square_j = square.Square(j)
+                    piece_j = self.get_piece(square_j)
+
+                    # Stay off friendly pieces
+                    if piece_i.color == piece_j.color: break
+
+                    # Determine pawn moves
+                    if piece_i.piece_type == piece.PAWN:
+                        if direction in (piece.N, piece.S) \
+                            and piece_j.piece_type != piece.EMPTY_PIECE: break
+                        
+                        if direction in (
+                            piece.N + piece.E,
+                            piece.N + piece.W,
+                            piece.S + piece.E,
+                            piece.S + piece.W,
+                        ) \
+                            and piece_j.color != self.get_opposing_color() \
+                            and square_j != self.ep_square:
+                            break
+                        
+                        if direction == piece.N + piece.N:
+                            piece_int = self.get_piece(square.Square(i + piece.N))
+
+                            if square_i.rank() != 2: break
+                            if piece_int.piece_type != piece.EMPTY_PIECE: break
+                            if piece_j.piece_type != piece.EMPTY_PIECE: break
+                        
+                        if direction == piece.S + piece.S:
+                            piece_int = self.get_piece(square.Square(i + piece.S))
+
+                            if square_i.rank() != 7: break
+                            if piece_int.piece_type != piece.EMPTY_PIECE: break
+                            if piece_j.piece_type != piece.EMPTY_PIECE: break
+                    
+                    # Generate move
+                    my_move = move.Move(square.Square(i), square.Square(j))
+                    my_moves.append(my_move)
+                    
+                    # Break for captures
+                    if piece_j.piece_type != piece.EMPTY_PIECE: break
+
+                    # Break for non-sliding pieces
+                    if not piece_i.is_sliding(): break
+
+                    # Iterate step for sliding pieces
+                    step += direction
+        
+        return my_moves
