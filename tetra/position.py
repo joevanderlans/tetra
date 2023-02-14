@@ -104,10 +104,12 @@ class Position:
                 empty_squares = 0
                 board_fen += self.board[square_i]
             
-            if (i+1) % 8 == 0 and i < 63:
+            if (i+1) % 8 == 0:
                 if empty_squares > 0:
                     board_fen += str(empty_squares)
                 empty_squares = 0
+            
+            if (i+1) % 8 == 0 and i < 63:
                 board_fen += "/"
 
         # Set turn_fen
@@ -215,7 +217,7 @@ class Position:
                     my_moves.append(my_move)
                     
                     # Break for captures
-                    if piece_j.piece_type == self.get_opposing_color(): break
+                    if piece_j.color == self.get_opposing_color(): break
 
                     # Break for non-sliding pieces
                     if not piece_i.is_sliding(): break
@@ -223,6 +225,43 @@ class Position:
                     # Iterate step for sliding pieces
                     step += direction
         
+        # Add castling moves
+        if self.turn == piece.WHITE \
+            and "K" in self.castling_rights \
+            and not self.is_check() \
+            and self.get_piece(square.Square.from_name("f1")).piece_type == piece.EMPTY_PIECE \
+            and self.get_piece(square.Square.from_name("g1")).piece_type == piece.EMPTY_PIECE \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("f1")) \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("g1")):
+            my_moves.append(move.Move.from_uci("e1g1"))
+        
+        if self.turn == piece.WHITE \
+            and "Q" in self.castling_rights \
+            and not self.is_check() \
+            and self.get_piece(square.Square.from_name("c1")).piece_type == piece.EMPTY_PIECE \
+            and self.get_piece(square.Square.from_name("d1")).piece_type == piece.EMPTY_PIECE \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("c1")) \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("d1")):
+            my_moves.append(move.Move.from_uci("e1c1"))
+        
+        if self.turn == piece.BLACK \
+            and "k" in self.castling_rights \
+            and not self.is_check() \
+            and self.get_piece(square.Square.from_name("f8")).piece_type == piece.EMPTY_PIECE \
+            and self.get_piece(square.Square.from_name("g8")).piece_type == piece.EMPTY_PIECE \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("f8")) \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("g8")):
+            my_moves.append(move.Move.from_uci("e8g8"))
+        
+        if self.turn == piece.BLACK \
+            and "q" in self.castling_rights \
+            and not self.is_check() \
+            and self.get_piece(square.Square.from_name("c8")).piece_type == piece.EMPTY_PIECE \
+            and self.get_piece(square.Square.from_name("d8")).piece_type == piece.EMPTY_PIECE \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("c8")) \
+            and not self.is_attacked(self.get_opposing_color(), square.Square.from_name("d8")):
+            my_moves.append(move.Move.from_uci("e8c8"))
+
         return my_moves
 
     def make_move(self, move: move.Move) -> None:
@@ -238,8 +277,92 @@ class Position:
         self.remove_piece(move.from_square)
         self.set_piece(piece_i, move.to_square)
 
+        # Make en passant capture
+        if piece_i.piece_type == piece.PAWN \
+            and piece_i.color == piece.WHITE \
+            and square_j == self.ep_square:
+            square_ep_capture = square.Square(square_j.index + piece.S)
+            self.remove_piece(square_ep_capture)
+        
+        if piece_i.piece_type == piece.PAWN \
+            and piece_i.color == piece.BLACK \
+            and square_j == self.ep_square:
+            square_ep_capture = square.Square(square_j.index + piece.N)
+            self.remove_piece(square_ep_capture)
+
+        # Make castle move
+        if piece_i.piece_type == piece.KING \
+            and square_i == square.Square(square.E1) \
+            and square_j == square.Square(square.G1):
+            rook_square_i = square.Square.from_name("h1")
+            rook_square_j = square.Square.from_name("f1")
+            rook_piece_i = self.get_piece(rook_square_i)
+            self.remove_piece(rook_square_i)
+            self.set_piece(rook_piece_i, rook_square_j)
+        
+        if piece_i.piece_type == piece.KING \
+            and square_i == square.Square(square.E1) \
+            and square_j == square.Square(square.C1):
+            rook_square_i = square.Square.from_name("a1")
+            rook_square_j = square.Square.from_name("d1")
+            rook_piece_i = self.get_piece(rook_square_i)
+            self.remove_piece(rook_square_i)
+            self.set_piece(rook_piece_i, rook_square_j)
+                
+        if piece_i.piece_type == piece.KING \
+            and square_i == square.Square(square.E8) \
+            and square_j == square.Square(square.G8):
+            rook_square_i = square.Square.from_name("h8")
+            rook_square_j = square.Square.from_name("f8")
+            rook_piece_i = self.get_piece(rook_square_i)
+            self.remove_piece(rook_square_i)
+            self.set_piece(rook_piece_i, rook_square_j)
+        
+        if piece_i.piece_type == piece.KING \
+            and square_i == square.Square(square.E8) \
+            and square_j == square.Square(square.C8):
+            rook_square_i = square.Square.from_name("a8")
+            rook_square_j = square.Square.from_name("d8")
+            rook_piece_i = self.get_piece(rook_square_i)
+            self.remove_piece(rook_square_i)
+            self.set_piece(rook_piece_i, rook_square_j)
+
         # Update castling rights
-        # To do
+        if piece_i.color == piece.WHITE:
+            if piece_i.piece_type == piece.KING:
+                self.castling_rights = [
+                    x for x in self.castling_rights if x not in ("K", "Q")
+                ]
+
+            if piece_i.piece_type == piece.ROOK \
+                and square_i == square.Square(square.A1):
+                self.castling_rights = [
+                    x for x in self.castling_rights if x != "Q"
+                ]
+
+            if piece_i.piece_type == piece.ROOK \
+                and square_i == square.Square(square.H1):
+                self.castling_rights = [
+                    x for x in self.castling_rights if x != "K"
+                ]
+        
+        if piece_i.color == piece.BLACK:
+            if piece_i.piece_type == piece.KING:
+                self.castling_rights = [
+                    x for x in self.castling_rights if x not in ("k", "q")
+                ]
+
+            if piece_i.piece_type == piece.ROOK \
+                and square_i == square.Square(square.A8):
+                self.castling_rights = [
+                    x for x in self.castling_rights if x != "q"
+                ]
+
+            if piece_i.piece_type == piece.ROOK \
+                and square_i == square.Square(square.H8):
+                self.castling_rights = [
+                    x for x in self.castling_rights if x != "k"
+                ]
 
         # Update en passant square
         self.ep_square = None
@@ -253,7 +376,7 @@ class Position:
         
         # Update halfmove clock
         if piece_i.piece_type == piece.PAWN \
-            or piece_j.piece_color == self.get_opposing_color():
+            or piece_j.color == self.get_opposing_color():
             self.halfmove_clock = 0
         else:
             self.halfmove_clock += 1
@@ -264,3 +387,75 @@ class Position:
         
         # Update turn
         self.turn = self.get_opposing_color()
+    
+    def find_king(self, color: piece.Color) -> square.Square:
+        king = piece.Piece(color, piece.KING)
+        return square.Square(self.board.index(king.symbol()))
+
+    def find_attackers(
+        self,
+        attacking_color: piece.Color,
+        target_square: square.Square
+    ) -> list[square.Square]:
+        attackers = []
+
+        pieces = [
+            piece.Piece(attacking_color, piece.PAWN),
+            piece.Piece(attacking_color, piece.KNIGHT),
+            piece.Piece(attacking_color, piece.BISHOP),
+            piece.Piece(attacking_color, piece.ROOK),
+            piece.Piece(attacking_color, piece.QUEEN),
+            piece.Piece(attacking_color, piece.KING),
+        ]
+
+        for piece_i in pieces:
+            directions = piece_i.directions()
+
+            if piece_i.piece_type == piece.PAWN:
+                # Filter for attacking moves
+                directions = filter(lambda x: x in [
+                    piece.N + piece.E,
+                    piece.N + piece.W,
+                    piece.S + piece.E,
+                    piece.S + piece.W,
+                ], directions)
+
+                # Look in the reverse direction of attack
+                directions = [-d for d in directions]
+            
+            # Loop over directions
+            for direction in directions:
+                step = direction
+                
+                # Use a loop for sliding pieces
+                while True:
+                    j = target_square.index + step
+
+                    # Break if off board
+                    if j not in square.SQUARES: break
+
+                    square_j = square.Square(j)
+                    piece_j = self.get_piece(square_j)
+
+                    # Check for attacker
+                    if piece_i == piece_j:
+                        attackers.append(square_j)
+                        break
+
+                    # Break if not empty
+                    if piece_j.piece_type != piece.EMPTY_PIECE: break
+                    
+                    # Break for non-sliding pieces
+                    if not piece_i.is_sliding(): break
+
+                    # Iterate step for sliding pieces
+                    step += direction
+        
+        return attackers
+
+    def is_attacked(self, attacking_color: piece.Color, target_square: square.Square) -> bool:
+        attackers = self.find_attackers(attacking_color, target_square)
+        return len(attackers) > 0
+
+    def is_check(self) -> bool:
+        return self.is_attacked(self.get_opposing_color(), self.find_king(self.turn))
