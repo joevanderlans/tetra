@@ -1,9 +1,8 @@
 from __future__ import annotations
+
 from typing import Optional
 
-from tetra import piece
-from tetra import square
-from tetra import move
+from tetra import move, piece, square
 
 # Create position constants
 INITIAL_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"

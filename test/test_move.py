@@ -1,6 +1,4 @@
-from tetra import move
-from tetra import square
-from tetra import piece
+from tetra import move, piece, square
 
 
 def test_move():

@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from typing import Optional
 
-from tetra import square
-from tetra import piece
+from tetra import piece, square
+
 
 # Create move class
 class Move:

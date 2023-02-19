@@ -1,7 +1,4 @@
-from tetra import piece
-from tetra import square
-from tetra import move
-from tetra import position
+from tetra import move, piece, position, square
 
 
 def test_initial_position():
