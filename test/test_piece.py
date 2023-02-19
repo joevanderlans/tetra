@@ -1,5 +1,6 @@
 from tetra import piece
 
+
 def test_piece_type():
     assert piece.Piece.from_symbol(".").piece_type == piece.EMPTY_PIECE
     assert piece.Piece.from_symbol("P").piece_type == piece.PAWN
@@ -9,10 +10,12 @@ def test_piece_type():
     assert piece.Piece.from_symbol("Q").piece_type == piece.QUEEN
     assert piece.Piece.from_symbol("K").piece_type == piece.KING
 
+
 def test_color():
     assert piece.Piece.from_symbol(".").color == piece.EMPTY_COLOR
     assert piece.Piece.from_symbol("P").color == piece.WHITE
     assert piece.Piece.from_symbol("p").color == piece.BLACK
+
 
 def test_piece_eq():
     assert piece.Piece.from_symbol("P") == piece.Piece.from_symbol("P")

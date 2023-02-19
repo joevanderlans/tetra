@@ -3,6 +3,8 @@ from __future__ import annotations
 # Create square constants
 SquareName = str
 SquareIndex = int
+
+# fmt: off
 SQUARE_NAMES = [
     "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ",
     "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ", "  ",
@@ -37,11 +39,13 @@ SQUARES = [
     81, 82, 83, 84, 85, 86, 87, 88,
     91, 92, 93, 94, 95, 96, 97, 98,
 ]
+# fmt: on
 
 
 # Create square class
 class Square:
     """A square on a chess board"""
+
     def __init__(self, index: SquareIndex) -> None:
         self.index = index
 
@@ -50,7 +54,7 @@ class Square:
 
     def __str__(self) -> str:
         return self.name()
-    
+
     def __eq__(self, other: Square) -> bool:
         if isinstance(other, Square):
             return self.index == other.index
@@ -59,13 +63,13 @@ class Square:
 
     def name(self) -> str:
         return SQUARE_NAMES[self.index]
-    
+
     def file(self) -> str:
         return str(self.name())[0]
 
     def rank(self) -> int:
         return int(str(self.name())[1])
-   
+
     @classmethod
     def from_name(cls, name: SquareName) -> Square:
         index = SQUARE_NAMES.index(name)
