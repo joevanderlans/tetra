@@ -83,3 +83,18 @@ def test_ep_capture():
 
     my_position.make_move(move.Move.from_uci("e5d6"))
     assert my_position.fen() == "rnbqkbnr/1pp1pppp/p2P4/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3"
+
+def test_moves_promotion():
+    promotion = "rnbqkbnr/1pppppPp/8/8/8/p7/PPPPP1PP/RNBQKBNR w KQkq - 0 5"
+    my_moves = position.Position(promotion).generate_moves()
+    assert move.Move.from_uci("g7h8q") in my_moves
+    assert move.Move.from_uci("g7h8r") in my_moves
+    assert move.Move.from_uci("g7h8b") in my_moves
+    assert move.Move.from_uci("g7h8n") in my_moves
+
+    promotion = "rnbqkbnr/pPppp1pp/8/8/8/8/1PPPPPpP/RNBQKBNR b KQkq - 0 5"
+    my_moves = position.Position(promotion).generate_moves()
+    assert move.Move.from_uci("g2h1q") in my_moves
+    assert move.Move.from_uci("g2h1r") in my_moves
+    assert move.Move.from_uci("g2h1b") in my_moves
+    assert move.Move.from_uci("g2h1n") in my_moves

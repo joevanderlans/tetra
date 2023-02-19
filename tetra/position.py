@@ -212,8 +212,30 @@ class Position:
                             if piece_int.piece_type != piece.EMPTY_PIECE: break
                             if piece_j.piece_type != piece.EMPTY_PIECE: break
                     
+                    # Determine promotion moves
+                    if (
+                        piece_i.piece_type == piece.PAWN \
+                        and piece_i.color == piece.WHITE \
+                        and square_j.rank() == 8
+                    ) or (
+                        piece_i.piece_type == piece.PAWN \
+                        and piece_i.color == piece.BLACK \
+                        and square_j.rank() == 1
+                    ):
+                        # Loop over promotion options
+                        for promotion_symbol in ["q", "r", "b", "n"]:
+                            if piece_i.color == piece.WHITE:
+                                promotion_symbol = promotion_symbol.upper()
+                            
+                            promotion = piece.Piece.from_symbol(promotion_symbol)
+                            my_move = move.Move(square_i, square_j, promotion)
+                            my_moves.append(my_move)
+                        
+                        # Break after adding promotion moves
+                        break
+                    
                     # Generate move
-                    my_move = move.Move(square.Square(i), square.Square(j))
+                    my_move = move.Move(square_i, square_j)
                     my_moves.append(my_move)
                     
                     # Break for captures
