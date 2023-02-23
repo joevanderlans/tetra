@@ -9,12 +9,23 @@ INITIAL_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 INITIAL_FEN = INITIAL_BOARD_FEN + " w KQkq - 0 1"
 
 
+class PositionState:
+    def __init__(self, position: Position) -> None:
+        self.board = position.board.copy()
+        self.turn = position.turn
+        self.castling_rights = position.castling_rights.copy()
+        self.ep_square = position.ep_square
+        self.halfmove_clock = position.halfmove_clock
+        self.move_number = position.move_number
+
+
 # Create position class
 class Position:
     """A chess position"""
 
     def __init__(self, fen: Optional[str] = INITIAL_FEN) -> None:
         self.move_stack = []
+        self.position_stack = []
         self.set_fen(fen)
 
     def __repr__(self) -> str:
@@ -138,6 +149,9 @@ class Position:
                 move_number_fen,
             ]
         )
+
+    def position_state(self) -> PositionState:
+        return PositionState(self)
 
     def get_piece(self, square: square.Square) -> piece.Piece:
         return piece.Piece.from_symbol(self.board[square.index])
@@ -342,6 +356,9 @@ class Position:
         # Update move stack
         self.move_stack.append(move)
 
+        # Update position stack
+        self.position_stack.append(self.position_state())
+
         # Update board
         square_i = move.from_square
         square_j = move.to_square
@@ -475,6 +492,17 @@ class Position:
 
         # Update turn
         self.turn = self.get_opposing_color()
+
+    def unmake_move(self) -> None:
+        self.move_stack.pop()
+        last_position = self.position_stack.pop()
+
+        self.board = last_position.board.copy()
+        self.turn = last_position.turn
+        self.castling_rights = last_position.castling_rights.copy()
+        self.ep_square = last_position.ep_square
+        self.halfmove_clock = last_position.halfmove_clock
+        self.move_number = last_position.move_number
 
     def find_king(self, color: piece.Color) -> square.Square:
         king = piece.Piece(color, piece.KING)

@@ -123,3 +123,11 @@ def test_moves_promotion():
     assert move.Move.from_uci("g2h1r") in my_moves
     assert move.Move.from_uci("g2h1b") in my_moves
     assert move.Move.from_uci("g2h1n") in my_moves
+
+
+def test_unmake_move():
+    my_fen = "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4"
+    my_position = position.Position(my_fen)
+    my_position.make_move(move.Move.from_uci("e1g1"))
+    my_position.unmake_move()
+    assert my_position.fen() == my_fen
