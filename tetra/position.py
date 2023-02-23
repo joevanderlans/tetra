@@ -162,7 +162,7 @@ class Position:
     def remove_piece(self, square: square.Square) -> None:
         self.board[square.index] = "."
 
-    def get_opposing_color(self) -> piece.Color:
+    def opposing_color(self) -> piece.Color:
         if self.turn == piece.WHITE:
             opposing_color = piece.BLACK
         else:
@@ -219,7 +219,7 @@ class Position:
                                 piece.S + piece.E,
                                 piece.S + piece.W,
                             )
-                            and piece_j.color != self.get_opposing_color()
+                            and piece_j.color != self.opposing_color()
                             and square_j != self.ep_square
                         ):
                             break
@@ -243,6 +243,10 @@ class Position:
                                 break
                             if piece_j.piece_type != piece.EMPTY_PIECE:
                                 break
+
+                    # Break if moving into check
+                    if self.is_into_check(move.Move(square_i, square_j)):
+                        break
 
                     # Determine promotion moves
                     if (
@@ -271,7 +275,7 @@ class Position:
                     my_moves.append(my_move)
 
                     # Break for captures
-                    if piece_j.color == self.get_opposing_color():
+                    if piece_j.color == self.opposing_color():
                         break
 
                     # Break for non-sliding pieces
@@ -291,10 +295,10 @@ class Position:
             and self.get_piece(square.Square.from_name("g1")).piece_type
             == piece.EMPTY_PIECE
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("f1")
+                self.opposing_color(), square.Square.from_name("f1")
             )
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("g1")
+                self.opposing_color(), square.Square.from_name("g1")
             )
         ):
             my_moves.append(move.Move.from_uci("e1g1"))
@@ -308,10 +312,10 @@ class Position:
             and self.get_piece(square.Square.from_name("d1")).piece_type
             == piece.EMPTY_PIECE
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("c1")
+                self.opposing_color(), square.Square.from_name("c1")
             )
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("d1")
+                self.opposing_color(), square.Square.from_name("d1")
             )
         ):
             my_moves.append(move.Move.from_uci("e1c1"))
@@ -325,10 +329,10 @@ class Position:
             and self.get_piece(square.Square.from_name("g8")).piece_type
             == piece.EMPTY_PIECE
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("f8")
+                self.opposing_color(), square.Square.from_name("f8")
             )
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("g8")
+                self.opposing_color(), square.Square.from_name("g8")
             )
         ):
             my_moves.append(move.Move.from_uci("e8g8"))
@@ -342,10 +346,10 @@ class Position:
             and self.get_piece(square.Square.from_name("d8")).piece_type
             == piece.EMPTY_PIECE
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("c8")
+                self.opposing_color(), square.Square.from_name("c8")
             )
             and not self.is_attacked(
-                self.get_opposing_color(), square.Square.from_name("d8")
+                self.opposing_color(), square.Square.from_name("d8")
             )
         ):
             my_moves.append(move.Move.from_uci("e8c8"))
@@ -498,10 +502,7 @@ class Position:
             self.ep_square = square.Square(square_i.index + piece.S)
 
         # Update halfmove clock
-        if (
-            piece_i.piece_type == piece.PAWN
-            or piece_j.color == self.get_opposing_color()
-        ):
+        if piece_i.piece_type == piece.PAWN or piece_j.color == self.opposing_color():
             self.halfmove_clock = 0
         else:
             self.halfmove_clock += 1
@@ -511,7 +512,7 @@ class Position:
             self.move_number += 1
 
         # Update turn
-        self.turn = self.get_opposing_color()
+        self.turn = self.opposing_color()
 
     def unmake_move(self) -> None:
         self.move_stack.pop()
@@ -600,5 +601,13 @@ class Position:
         attackers = self.find_attackers(attacking_color, target_square)
         return len(attackers) > 0
 
+    def is_into_check(self, move) -> bool:
+        self.make_move(move)
+        is_into_check = self.is_attacked(
+            self.turn, self.find_king(self.opposing_color())
+        )
+        self.unmake_move()
+        return is_into_check
+
     def is_check(self) -> bool:
-        return self.is_attacked(self.get_opposing_color(), self.find_king(self.turn))
+        return self.is_attacked(self.opposing_color(), self.find_king(self.turn))

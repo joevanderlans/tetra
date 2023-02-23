@@ -131,3 +131,9 @@ def test_unmake_move():
     my_position.make_move(move.Move.from_uci("e1g1"))
     my_position.unmake_move()
     assert my_position.fen() == my_fen
+
+
+def test_move_into_check():
+    my_fen = "r2q3r/ppp1kppp/2np1n2/2b1p1B1/2B1P1b1/2NP1N2/PPP1KPPP/R2Q3R w - - 4 8"
+    my_position = position.Position(my_fen)
+    assert move.Move.from_uci("f3g1") not in my_position.generate_moves()
