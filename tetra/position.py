@@ -447,6 +447,16 @@ class Position:
             ):
                 self.castling_rights = [x for x in self.castling_rights if x != "K"]
 
+            if piece_j.piece_type == piece.ROOK and square_j == square.Square(
+                square.A1
+            ):
+                self.castling_rights = [x for x in self.castling_rights if x != "Q"]
+
+            if piece_j.piece_type == piece.ROOK and square_j == square.Square(
+                square.H1
+            ):
+                self.castling_rights = [x for x in self.castling_rights if x != "K"]
+
         if piece_i.color == piece.BLACK:
             if piece_i.piece_type == piece.KING:
                 self.castling_rights = [
@@ -459,6 +469,16 @@ class Position:
                 self.castling_rights = [x for x in self.castling_rights if x != "q"]
 
             if piece_i.piece_type == piece.ROOK and square_i == square.Square(
+                square.H8
+            ):
+                self.castling_rights = [x for x in self.castling_rights if x != "k"]
+
+            if piece_j.piece_type == piece.ROOK and square_j == square.Square(
+                square.A8
+            ):
+                self.castling_rights = [x for x in self.castling_rights if x != "q"]
+
+            if piece_j.piece_type == piece.ROOK and square_j == square.Square(
                 square.H8
             ):
                 self.castling_rights = [x for x in self.castling_rights if x != "k"]
